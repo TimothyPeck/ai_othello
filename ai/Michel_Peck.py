@@ -23,6 +23,9 @@ class Michel_Peck:
 
     ROWS, COLS = None, None
 
+    player_color = None
+    opp_color = None
+
     def __init__(self) -> None:
         pass
 
@@ -33,6 +36,9 @@ class Michel_Peck:
         self.board = board
         self.legal_moves = board.get_possible_move()
 
+        self.player_color = board.get_turn()
+        self.opp_color = "W" if self.player_color == "B" else "B"
+
         self.ROWS, self.COLS = board.get_rows(), board.get_columns()
 
         (val, move) = self.alpha_beta(
@@ -42,6 +48,58 @@ class Michel_Peck:
 
     # Evaluate the board
     def evaluate(self, board: othello.OthelloGame) -> int:
+        (black_tokens, white_tokens) = board.compute_scores()
+        color = board.get_turn()
+        coin_parity, mobility, corners = 0, 0, 0
+        player_moves = board.get_possible_move()
+        board.switch_turn()
+        opp_moves = board.get_possible_move()
+        board.switch_turn()
+
+        if color == "B":
+            coin_parity = 100*(black_tokens-white_tokens) / \
+                (black_tokens+white_tokens)
+        elif color == "W":
+            coin_parity = 100*(white_tokens-black_tokens) / \
+                (white_tokens+black_tokens)
+
+        if len(player_moves)+len(opp_moves) != 0:
+            mobility = 100*(len(player_moves)-len(opp_moves)) / \
+                (len(player_moves)+len(opp_moves))
+        else:
+            mobility = 0
+
+        player_corners = 0
+        opp_corners = 0
+
+        if board.current_board[0][0] == self.player_color:
+            player_corners += 1
+        elif board.current_board[0][0] == self.opp_color:
+            opp_corners += 1
+
+        if board.current_board[self.ROWS-1][0] == self.player_color:
+            player_corners += 1
+        elif board.current_board[self.ROWS-1][0] == self.opp_color:
+            opp_corners += 1
+
+        if board.current_board[0][self.COLS-1] == self.player_color:
+            player_corners += 1
+        elif board.current_board[0][self.COLS-1] == self.opp_color:
+            opp_corners += 1
+
+        if board.current_board[self.ROWS-1][self.COLS-1] == self.player_color:
+            player_corners += 1
+        elif board.current_board[self.ROWS-1][self.COLS-1] == self.opp_color:
+            opp_corners += 1
+
+        if player_corners+opp_corners != 0:
+            corners = 100*(player_corners-opp_corners) / \
+                (player_corners + opp_corners)
+
+        score = (coin_parity+mobility+corners)/3
+        print(f"Score: {score}")
+        return score
+
         score = 0
         for row, col in product(range(self.ROWS), range(self.COLS)):
             turn = board.get_turn()
