@@ -65,9 +65,8 @@ class Michel_Peck:
     def compare_boards(self, new_board: othello.OthelloGame) -> int:
         (new_black_tiles, new_white_tiles) = new_board.get_scores()
         (old_black_tiles, old_white_tiles) = self.init_board.get_scores()
-        player_turn = self.init_board.get_turn()
         player_score = 0
-        if player_turn == "B":
+        if self.player_color == "B":
             player_score = (new_black_tiles-old_black_tiles) - \
                 (new_white_tiles-old_white_tiles)
         else:
