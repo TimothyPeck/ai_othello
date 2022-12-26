@@ -8,7 +8,6 @@ from itertools import product
 
 
 class Michel_Peck:
-    PB_FEINT = 0.05
     WEIGHTS = [
         [100, -10, 11, 6, 6, 6, 11, -10, 100],
         [-10, -20, 1, 2, 2, 2, 1, -20, -10],
@@ -35,6 +34,13 @@ class Michel_Peck:
         return "Michel_Peck"
 
     def next_move(self, board: othello.OthelloGame) -> tuple[int, int]:
+        """
+        The function takes in a board, and returns the best move for the player
+        
+        :param board: the current state of the game
+        :type board: othello.OthelloGame
+        :return: The move that the AI will make.
+        """
         self.board = board
         self.legal_moves = board.get_possible_move()
 
@@ -52,6 +58,13 @@ class Michel_Peck:
         return move
 
     def evaluate(self, board: othello.OthelloGame) -> int:
+        """
+        The function takes in a board and returns a score based on the weights of the board, really slow
+        
+        :param board: othello.OthelloGame
+        :type board: othello.OthelloGame
+        :return: The score of the board.
+        """
         score = 0
         for row, col in product(range(self.ROWS), range(self.COLS)):
             turn = board.get_turn()
@@ -63,6 +76,14 @@ class Michel_Peck:
         return score
 
     def compare_boards(self, new_board: othello.OthelloGame) -> int:
+        """
+        The function compares the score of the current board with the score of the initial board and
+        returns the difference, fast and surprisingly good
+        
+        :param new_board: othello.OthelloGame
+        :type new_board: othello.OthelloGame
+        :return: The difference between the player's score and the opponent's score.
+        """
         (new_black_tiles, new_white_tiles) = new_board.get_scores()
         (old_black_tiles, old_white_tiles) = self.init_board.get_scores()
         player_score = 0
@@ -75,6 +96,25 @@ class Michel_Peck:
         return player_score
 
     def alpha_beta(self, board: othello.OthelloGame, depth: int, alpha: int, beta: int, maximizing_player: bool) -> tuple[int, int]:
+        """
+        It's a recursive function that returns the best move for the current player, given the current
+        board state
+        
+        :param board: othello.OthelloGame
+        :type board: othello.OthelloGame
+        :param depth: The depth of the search tree
+        :type depth: int
+        :param alpha: the best score that the maximizing player currently can guarantee given the
+        current path
+        :type alpha: int
+        :param beta: the best score that the maximizing player can guarantee given the current state of
+        the game
+        :type beta: int
+        :param maximizing_player: True if the player is the maximizing player, False if the player is
+        the minimizing player
+        :type maximizing_player: bool
+        :return: The best score and the best move
+        """
         if depth == 0 or board.is_game_over():
             return self.compare_boards(board), None
 
