@@ -7,7 +7,7 @@ from copy import deepcopy
 from itertools import product
 
 
-class Michel_Peck:
+class Michel_Peck_CalcWeights:
     PB_FEINT = 0.05
     WEIGHTS = [
         [100, -10, 11, 6, 6, 6, 11, -10, 100],

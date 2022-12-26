@@ -7,7 +7,7 @@ from copy import deepcopy
 from itertools import product
 
 
-class Michel_Peck:
+class Michel_Peck_WashingtonWeights:
     PB_FEINT = 0.05
     WEIGHTS = [
         [100, -10, 11, 6, 6, 6, 11, -10, 100],
@@ -48,14 +48,55 @@ class Michel_Peck:
 
     # Evaluate the board
     def evaluate(self, board: othello.OthelloGame) -> int:
-        score = 0
-        for row, col in product(range(self.ROWS), range(self.COLS)):
-            turn = board.get_turn()
-            opp = "W" if turn == "B" else "B"
-            if board.current_board[row][col] == turn:
-                score += self.WEIGHTS[row][col]
-            elif board.current_board[row][col] == opp:
-                score -= self.WEIGHTS[row][col]
+        (black_tokens, white_tokens) = board.compute_scores()
+        color = board.get_turn()
+        coin_parity, mobility, corners = 0, 0, 0
+        player_moves = board.get_possible_move()
+        board.switch_turn()
+        opp_moves = board.get_possible_move()
+        board.switch_turn()
+
+        if color == "B":
+            coin_parity = 100*(black_tokens-white_tokens) / \
+                (black_tokens+white_tokens)
+        elif color == "W":
+            coin_parity = 100*(white_tokens-black_tokens) / \
+                (white_tokens+black_tokens)
+
+        if len(player_moves)+len(opp_moves) != 0:
+            mobility = 100*(len(player_moves)-len(opp_moves)) / \
+                (len(player_moves)+len(opp_moves))
+        else:
+            mobility = 0
+
+        player_corners = 0
+        opp_corners = 0
+
+        if board.current_board[0][0] == self.player_color:
+            player_corners += 1
+        elif board.current_board[0][0] == self.opp_color:
+            opp_corners += 1
+
+        if board.current_board[self.ROWS-1][0] == self.player_color:
+            player_corners += 1
+        elif board.current_board[self.ROWS-1][0] == self.opp_color:
+            opp_corners += 1
+
+        if board.current_board[0][self.COLS-1] == self.player_color:
+            player_corners += 1
+        elif board.current_board[0][self.COLS-1] == self.opp_color:
+            opp_corners += 1
+
+        if board.current_board[self.ROWS-1][self.COLS-1] == self.player_color:
+            player_corners += 1
+        elif board.current_board[self.ROWS-1][self.COLS-1] == self.opp_color:
+            opp_corners += 1
+
+        if player_corners+opp_corners != 0:
+            corners = 100*(player_corners-opp_corners) / \
+                (player_corners + opp_corners)
+
+        score = (coin_parity+mobility+corners)/3
         return score
 
     def alpha_beta(self, board: othello.OthelloGame, depth: int, alpha: int, beta: int, maximizing_player: bool) -> tuple[int, int]:
