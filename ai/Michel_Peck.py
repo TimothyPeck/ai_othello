@@ -40,10 +40,11 @@ class Michel_Peck:
         self.opp_color = "W" if self.player_color == "B" else "B"
 
         self.ROWS, self.COLS = board.get_rows(), board.get_columns()
-
+        time_start = time.time()
         (val, move) = self.alpha_beta(
             board, self.MAX_DEPTH, -math.inf, math.inf, True)
-
+        time_end = time.time()
+        print("Time taken: ", time_end - time_start)
         return move
 
     # Evaluate the board
