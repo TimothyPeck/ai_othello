@@ -26,6 +26,8 @@ class Michel_Peck:
     player_color = None
     opp_color = None
 
+    init_board = None
+
     def __init__(self) -> None:
         pass
 
@@ -40,14 +42,14 @@ class Michel_Peck:
         self.opp_color = "W" if self.player_color == "B" else "B"
 
         self.ROWS, self.COLS = board.get_rows(), board.get_columns()
-        time_start = time.time()
+
+        self.init_board = board
+
         (val, move) = self.alpha_beta(
             board, self.MAX_DEPTH, -math.inf, math.inf, True)
-        time_end = time.time()
-        print("Time taken: ", time_end - time_start)
+
         return move
 
-    # Evaluate the board
     def evaluate(self, board: othello.OthelloGame) -> int:
         score = 0
         for row, col in product(range(self.ROWS), range(self.COLS)):
@@ -59,9 +61,20 @@ class Michel_Peck:
                 score -= self.WEIGHTS[row][col]
         return score
 
+    def compare_boards(self, new_board: othello.OthelloGame) -> int:
+        (new_black_tiles, new_white_tiles) = new_board.get_scores()
+        (old_black_tiles, old_white_tiles) = self.init_board.get_scores()
+        old_turn = self.init_board.get_turn()
+        player_score = 0
+        if old_turn == "B":
+            player_score = new_black_tiles-old_black_tiles
+        else:
+            player_score = new_white_tiles-old_white_tiles
+        return player_score
+
     def alpha_beta(self, board: othello.OthelloGame, depth: int, alpha: int, beta: int, maximizing_player: bool) -> tuple[int, int]:
         if depth == 0 or board.is_game_over():
-            return self.evaluate(board), None
+            return self.compare_boards(board), None
 
         if maximizing_player:
             best_score = -math.inf
@@ -70,7 +83,7 @@ class Michel_Peck:
                 board_copy = board.copy_game()
                 board_copy.move(move[0], move[1])
                 score = self.alpha_beta(
-                    board_copy, depth - 1, alpha, beta, False)[0]
+                    board_copy, depth - 1, alpha, beta, not maximizing_player)[0]
                 best_score = max(score, best_score)
                 alpha = max(alpha, best_score)
                 if best_score == score:
@@ -85,7 +98,7 @@ class Michel_Peck:
                 board_copy = board.copy_game()
                 board_copy.move(move[0], move[1])
                 score = self.alpha_beta(
-                    board_copy, depth - 1, alpha, beta, True)[0]
+                    board_copy, depth - 1, alpha, beta, not maximizing_player)[0]
                 best_score = min(score, best_score)
                 beta = min(beta, best_score)
                 if best_score == score:
