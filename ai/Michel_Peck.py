@@ -48,6 +48,7 @@ class Michel_Peck:
         (val, move) = self.alpha_beta(
             board, self.MAX_DEPTH, -math.inf, math.inf, True)
 
+        print(f"Score of the played move: {val}")
         return move
 
     def evaluate(self, board: othello.OthelloGame) -> int:
@@ -64,12 +65,14 @@ class Michel_Peck:
     def compare_boards(self, new_board: othello.OthelloGame) -> int:
         (new_black_tiles, new_white_tiles) = new_board.get_scores()
         (old_black_tiles, old_white_tiles) = self.init_board.get_scores()
-        old_turn = self.init_board.get_turn()
+        player_turn = self.init_board.get_turn()
         player_score = 0
-        if old_turn == "B":
-            player_score = new_black_tiles-old_black_tiles
+        if player_turn == "B":
+            player_score = (new_black_tiles-old_black_tiles) - \
+                (new_white_tiles-old_white_tiles)
         else:
-            player_score = new_white_tiles-old_white_tiles
+            player_score = (new_white_tiles-old_white_tiles) - \
+                (new_black_tiles-old_black_tiles)
         return player_score
 
     def alpha_beta(self, board: othello.OthelloGame, depth: int, alpha: int, beta: int, maximizing_player: bool) -> tuple[int, int]:
