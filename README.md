@@ -3,7 +3,7 @@ Jeanne Michel et Timothy Peck
 
 ## Fonction alpha_beta
 
-La fonction alpha_beta de notre implementation ne differe pas trop de celui du cours. Le plateau de jeu qui lui est envoie est, initialement, inchangé, mais au fur et a mesure, elle est copiée et modifiée pour chaque coup possible. Elle retourne le meilleur coup possible pour le joueur qui l'appelle. Ceci prends du temps car le deepcopy de python est assez lent. La fonction prends egalement la profondeur max, qui est decrementée a chaque appel recursif, et les valeurs alpha et beta qui sont utilisees pour l'optimisation de l'algorithme. On a aussi un boolean qui indique si on maximise ou minimise le joueur. Le déplacement precedent est également envoié pour le calcul de la fonction d'evaluation.
+La fonction alpha_beta de notre implémentation ne diffère pas trop de celui du cours. Le plateau de jeu qui lui est envoie est, initialement, inchangé, mais au fur et à mesure, elle est copiée et modifiée pour chaque coup possible. Elle retourne le meilleur coup possible pour le joueur qui l'appelle. Ceci prend du temps, car le deepcopy de python est assez lent. La fonction prend également la profondeur max, qui est décrémente a chaque appel récursif, et les valeurs alpha et beta qui sont utilisées pour l'optimisation de l'algorithme. On a aussi un booléen qui indique si on maximise ou minimise le joueur. Le déplacement précédent est également envoyé pour le calcul de la fonction d'évaluation.
 
 ```python
 def alpha_beta(self, board: othello.OthelloGame, depth: int, alpha: int, beta: int, maximizing_player: bool, test_move: tuple[int, int] = None) -> tuple[int, tuple[int, int]]:
@@ -42,8 +42,8 @@ def alpha_beta(self, board: othello.OthelloGame, depth: int, alpha: int, beta: i
 ---
 ## Fonction de comparaison, compare_boards
 
-A l'appel de next_move, on sauvegarde le plateau actuel. Ensuite, quand alpha_beta atteinds sa profondeur maximale, on compare le nombre de pions de chaque joueur sur le plateau actuel et le plateau sauvegardé.
-On y ajoute également le score du l'emplacement joué pris dans le tableau des score pris de (A New Experience: O-Thell-Us – An AI Project.)[1], celui-ci etait initailement prévu pour un plateau de 8x8, mais nous l'avons adapté a un plateau 9x7. 
+À l'appel de next_move, on sauvegarde le plateau actuel. Ensuite, quand alpha_beta atteint sa profondeur maximale, on compare le nombre de pions de chaque joueur sur le plateau actuel et le plateau sauvegardé.
+On y ajoute également le score du l'emplacement joué pris dans le tableau des scores pris de (A New Experience: O-Thell-Us – An AI Project.)[1], celui-ci était initialement prévu pour un plateau de 8x8, mais nous l'avons adapté a un plateau 9x7. 
 On retourne ensuite le score de ce coup.
 
 ```python
@@ -62,8 +62,8 @@ def compare_boards(self, board: othello.OthelloGame, move: tuple[int, int]) -> i
     return player_score
 ```
 
-Cette fonction est que appelée lorsque la profondeur maximale est atteinte, il faut donc qu'elle soit plutot rapide. 
-C'est pour cela que nous avons choisi cette fonction de comparaison, plutot qu'une autre qui calculait le score basé sur les poids des pions actuels, ce qui prennait deux for imbriqués et une eternité.
+Cette fonction est qu’appelée lorsque la profondeur maximale est atteinte, il faut donc qu'elle soit plutôt rapide. 
+C'est pour cela que nous avons choisi cette fonction de comparaison, plutôt qu'une autre qui calculait le score basé sur les poids des pions actuels, ce qui prenait deux for imbriqués et une éternité.
 
 ## References
 
