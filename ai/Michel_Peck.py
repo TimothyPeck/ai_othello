@@ -16,14 +16,13 @@ class Michel_Peck:
         [10, 1, 5, 4, 4, 4, 5, 1, 10],
         [-10, -20, 1, 2, 2, 2, 1, -20, -10],
         [100, -10, 11, 6, 6, 6, 11, -10, 100]
-    ]  # taken from https://courses.cs.washington.edu/courses/cse573/04au/Project/mini1/RUSSIA/Final_Paper.pdf
+    ]  # taken from https://courses.cs.washington.edu/courses/cse573/04au/Project/mini1/O-Thell-Us/Othellus.pdf and modified to our needs
 
     MAX_DEPTH = 5
 
     ROWS, COLS = None, None
 
     player_color = None
-    opp_color = None
 
     init_board = None
 
@@ -36,7 +35,7 @@ class Michel_Peck:
     def next_move(self, board: othello.OthelloGame) -> tuple[int, int]:
         """
         The function takes in a board, and returns the best move for the player
-        
+
         :param board: the current state of the game
         :type board: othello.OthelloGame
         :return: The move that the AI will make.
@@ -45,7 +44,6 @@ class Michel_Peck:
         self.legal_moves = board.get_possible_move()
 
         self.player_color = board.get_turn()
-        self.opp_color = "W" if self.player_color == "B" else "B"
 
         self.ROWS, self.COLS = board.get_rows(), board.get_columns()
 
@@ -54,52 +52,39 @@ class Michel_Peck:
         (val, move) = self.alpha_beta(
             board, self.MAX_DEPTH, -math.inf, math.inf, True)
 
-        print(f"Score of the played move: {val}")
         return move
 
-    def evaluate(self, board: othello.OthelloGame) -> int:
+    def compare_boards(self, board: othello.OthelloGame, move: tuple[int, int]) -> int:
         """
-        The function takes in a board and returns a score based on the weights of the board, really slow
-        
-        :param board: othello.OthelloGame
-        :type board: othello.OthelloGame
-        :return: The score of the board.
-        """
-        score = 0
-        for row, col in product(range(self.ROWS), range(self.COLS)):
-            turn = board.get_turn()
-            opp = "W" if turn == "B" else "B"
-            if board.current_board[row][col] == turn:
-                score += self.WEIGHTS[row][col]
-            elif board.current_board[row][col] == opp:
-                score -= self.WEIGHTS[row][col]
-        return score
+        Takes the new board and calculates the difference between the scores of the boards, 
+        adds the value of the weight to the score therefor ensuring that the move is pretty good.
 
-    def compare_boards(self, new_board: othello.OthelloGame) -> int:
+        :param board: the board after the move has been made
+        :type board: othello.OthelloGame
+        :param move: tuple[int, int]
+        :type move: tuple[int, int]
+        :return: The score of the move.
         """
-        The function compares the score of the current board with the score of the initial board and
-        returns the difference, fast and surprisingly good
-        
-        :param new_board: othello.OthelloGame
-        :type new_board: othello.OthelloGame
-        :return: The difference between the player's score and the opponent's score.
-        """
-        (new_black_tiles, new_white_tiles) = new_board.get_scores()
-        (old_black_tiles, old_white_tiles) = self.init_board.get_scores()
-        player_score = 0
-        if self.player_color == "B":
+
+        (new_black_tiles, new_white_tiles) = board.get_scores() # Gets the score for the current board
+        (old_black_tiles, old_white_tiles) = self.init_board.get_scores() # Gets the score for the inital board
+
+        weight = self.WEIGHTS[move[0]][move[1]] # Get the weight of the current board
+        player_score = 0 # Initialises the score to 0
+        if self.player_color == "B": # Changes how the score is calculated depending on the colour of the player
             player_score = (new_black_tiles-old_black_tiles) - \
-                (new_white_tiles-old_white_tiles)
+                (new_white_tiles-old_white_tiles) # Difference between the new and old board
         else:
             player_score = (new_white_tiles-old_white_tiles) - \
-                (new_black_tiles-old_black_tiles)
+                (new_black_tiles-old_black_tiles) # Difference between the new and old board
+
+        player_score += weight # Adds the weight od the move to the score
         return player_score
 
-    def alpha_beta(self, board: othello.OthelloGame, depth: int, alpha: int, beta: int, maximizing_player: bool) -> tuple[int, int]:
+    def alpha_beta(self, board: othello.OthelloGame, depth: int, alpha: int, beta: int, maximizing_player: bool, test_move: tuple[int, int] = None) -> tuple[int, tuple[int, int]]:
         """
-        It's a recursive function that returns the best move for the current player, given the current
-        board state
-        
+        Using the alpha-beta algorithm, gets the "best" move for the current board going to a max depth definied in the initial called and decremented with every recursive call
+
         :param board: othello.OthelloGame
         :type board: othello.OthelloGame
         :param depth: The depth of the search tree
@@ -115,36 +100,36 @@ class Michel_Peck:
         :type maximizing_player: bool
         :return: The best score and the best move
         """
-        if depth == 0 or board.is_game_over():
-            return self.compare_boards(board), None
+        if depth == 0 or board.is_game_over(): # Run when we reach max depth or the game is over (last possible move, no need to go further)
+            return self.compare_boards(board, test_move), None # Return the score for the tested move, and None, which is the move itself.
 
-        if maximizing_player:
-            best_score = -math.inf
-            best_move = None
-            for move in board.get_possible_move():
-                board_copy = board.copy_game()
-                board_copy.move(move[0], move[1])
+        if maximizing_player: # If we are maximising the player
+            best_score = -math.inf # Make the best score as low as possible, it can only get better from here
+            best_move = None # no move yet
+            for move in board.get_possible_move(): # Get all the possible moves on the board, maybe for the current player, hard to tell, never complains though so who knows
+                board_copy = board.copy_game() # Copy of the board, uses deepcopy, slow
+                board_copy.move(move[0], move[1]) # Play the move on the copied board
                 score = self.alpha_beta(
-                    board_copy, depth - 1, alpha, beta, not maximizing_player)[0]
-                best_score = max(score, best_score)
-                alpha = max(alpha, best_score)
-                if best_score == score:
+                    board_copy, depth - 1, alpha, beta, not maximizing_player, move)[0] # call self again, gets the score for this move and future possbible moves from this one, saves just the score not the move
+                best_score = max(score, best_score) # Gets the best of the scores
+                alpha = max(alpha, best_score) # Takes the best between alpha and the score
+                if best_score == score: # if the best score is the same as the score, take that move
                     best_move = move
-                if beta <= alpha:
+                if best_score > beta: # stop if the value is greater than beta
                     break
             return best_score, best_move
         else:
-            best_score = math.inf
-            best_move = None
-            for move in board.get_possible_move():
-                board_copy = board.copy_game()
-                board_copy.move(move[0], move[1])
+            best_score = math.inf # Make the best score as high as possible, since technically it can only get worse from here
+            best_move = None # no move yet
+            for move in board.get_possible_move(): # ditto
+                board_copy = board.copy_game() # ditto
+                board_copy.move(move[0], move[1]) # ditto
                 score = self.alpha_beta(
-                    board_copy, depth - 1, alpha, beta, not maximizing_player)[0]
-                best_score = min(score, best_score)
-                beta = min(beta, best_score)
-                if best_score == score:
+                    board_copy, depth - 1, alpha, beta, not maximizing_player, move)[0] # call self again, gets the score for this move and future possbible moves from this one, saves just the score not the move
+                best_score = min(score, best_score) # gets the lowest
+                beta = min(beta, best_score) # opposite to alpha
+                if best_score == score: # same as alpha
                     best_move = move
-                if beta <= alpha:
+                if best_score < alpha: # stop if the value is less than alpha
                     break
             return best_score, best_move
