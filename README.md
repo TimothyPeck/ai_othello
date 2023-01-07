@@ -49,6 +49,8 @@ def alpha_beta(self, board: othello.OthelloGame, depth: int, alpha: int, beta: i
 On y ajoute également le score de l'emplacement joué pris dans le tableau des scores pris de (A New Experience: O-Thell-Us – An AI Project.)[1], celui-ci était initialement prévu pour un plateau de 8x8, mais nous l'avons adapté a un plateau 9x7.
 On retourne ensuite le score de ce coup.
 
+Selon le rapport cité ci-dessus, la meilleure heuristique consiste à attribuer des poids aux cases selon leur emplacement. Les coins ont le poids le plus grand, car c'est un emplacement stratégique. Les bords sont le second emplacement stratégique, ils doivent valoir plus que l'intérieur du terrain. Concernant l'intérieur du terrain, les différents poids simulent une distribution gaussienne.
+
 ```python
 def compare_boards(self, board: othello.OthelloGame, move: tuple[int, int]) -> int:
     (new_black_tiles, new_white_tiles) = board.get_scores()
